@@ -47,9 +47,11 @@ Create, edit, and format DOCX documents via CLI tools or direct C# scripts built
 When the task requires structural document manipulation (custom styles, complex tables, multi-section layouts, headers/footers, TOC, images), write C# directly instead of wrestling with CLI limitations. Use this scaffold:
 
 ```csharp
-// File: scripts/dotnet/task.csx  (or a new .cs in a Console project)
-// dotnet run --project scripts/dotnet/MiniMaxAIDocx.Cli -- run-script task.csx
-#r "nuget: DocumentFormat.OpenXml, 3.2.0"
+// Put this in a console project of your own. The CLI has no script runner, so a
+// bare .csx cannot be executed — create the project first:
+//   dotnet new console -o my-docx-task
+//   dotnet add my-docx-task package DocumentFormat.OpenXml --version 3.5.1
+//   dotnet run --project my-docx-task
 
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
@@ -72,6 +74,10 @@ All CLI commands below use `$CLI` as shorthand for:
 ```bash
 dotnet run --project scripts/dotnet/MiniMaxAIDocx.Cli --
 ```
+
+Run these commands from the skill directory. Both `$CLI` and every `assets/...` or
+`scripts/...` path below are relative to it, so the same command from a project
+directory will not resolve.
 
 ## Pipeline routing
 
@@ -154,9 +160,12 @@ For complex template operations (multi-template merge, per-section headers/foote
 
 Run the **validation pipeline**, then the **hard gate-check**:
 ```bash
-$CLI validate --input out.docx --gate-check assets/xsd/business-rules.xsd
+$CLI validate --input out.docx --gate-check template.docx
 ```
-Gate-check is a **hard requirement**. Do NOT deliver until it passes. If it fails: diagnose, fix, re-run.
+`--gate-check` takes the **template DOCX**, not a schema: it compares the output against
+the template's style set, page size and margins, default font, and heading size
+hierarchy. Gate-check is a **hard requirement**. Do NOT deliver until it passes. If it
+fails: diagnose, fix, re-run.
 
 Also diff to verify content preservation: `$CLI diff --before source.docx --after out.docx`
 
