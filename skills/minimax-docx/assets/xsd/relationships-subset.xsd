@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Relationships Subset Schema for minimax-docx -->
+<!-- Companion to wml-subset.xsd: satisfies the r: namespace import so the
+     schema set can compile. Declares the relationship reference attributes
+     (r:id, r:embed, ...) that WordprocessingML elements carry; it does NOT
+     validate the .rels parts themselves, which are structural rather than
+     schema-validated. See references/xsd_validation_guide.md. -->
+<!-- MIT License - minimax-docx project -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+           elementFormDefault="qualified">
+
+  <!-- Global attribute declarations. Global attributes are always namespace
+       qualified, so `ref="r:id"` resolves regardless of attributeFormDefault. -->
+  <xs:attribute name="id" type="xs:string"/>
+  <xs:attribute name="embed" type="xs:string"/>
+  <xs:attribute name="link" type="xs:string"/>
+  <xs:attribute name="pict" type="xs:string"/>
+  <xs:attribute name="dm" type="xs:string"/>
+  <xs:attribute name="lo" type="xs:string"/>
+  <xs:attribute name="qs" type="xs:string"/>
+  <xs:attribute name="cs" type="xs:string"/>
+</xs:schema>

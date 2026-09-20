@@ -5,12 +5,18 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-           xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
            targetNamespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-           elementFormDefault="qualified">
+           elementFormDefault="qualified"
+           attributeFormDefault="qualified">
 
-  <xs:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
-  <xs:import namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"/>
+  <!-- Both imports need an explicit schemaLocation: the XML and relationships
+       namespaces are not built into XmlSchemaSet, so r:id and xml:space would
+       otherwise be unresolvable and compilation would fail. The referenced
+       schemas are local subsets, so validation needs no network access. -->
+  <xs:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+             schemaLocation="relationships-subset.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+             schemaLocation="xml-subset.xsd"/>
 
   <!-- ============================================================ -->
   <!-- Root element                                                  -->
@@ -108,8 +114,29 @@
         <xs:element name="commentReference" type="w:CT_MarkupRef"/>
         <xs:element name="footnoteReference" type="w:CT_FtnEdnRef"/>
         <xs:element name="endnoteReference" type="w:CT_FtnEdnRef"/>
+        <!-- Fields. TOC, page numbers, DATE and REF all expand to a fldChar
+             begin / instrText / fldChar separate / result / fldChar end run
+             sequence, so any document this skill generates with the toc or
+             page-numbers option needs these. -->
+        <xs:element name="fldChar" type="w:CT_FldChar"/>
+        <xs:element name="instrText" type="w:CT_Text"/>
+        <xs:element name="delInstrText" type="w:CT_Text"/>
       </xs:choice>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CT_FldChar">
+    <xs:attribute name="fldCharType" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:NCName">
+          <xs:enumeration value="begin"/>
+          <xs:enumeration value="separate"/>
+          <xs:enumeration value="end"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="fldLock" type="xs:boolean" use="optional"/>
+    <xs:attribute name="dirty" type="xs:boolean" use="optional"/>
   </xs:complexType>
 
   <!-- Run Properties -->
