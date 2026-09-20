@@ -7,6 +7,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DOTNET_DIR="$SCRIPT_DIR/dotnet"
+# Build against the CLI project, not $DOTNET_DIR: the directory holds only
+# MiniMaxAIDocx.slnx, which needs SDK 9.0.200+ while the projects target net8.0.
+CLI_PROJECT="$DOTNET_DIR/MiniMaxAIDocx.Cli/MiniMaxAIDocx.Cli.csproj"
 
 # Force English output for dotnet CLI
 export DOTNET_CLI_UI_LANGUAGE=en
@@ -66,12 +69,12 @@ if [ -d "$DOTNET_DIR" ]; then
         printf "[OK]      %-14s built\n" "project"
     else
         # Try restore + build
-        if dotnet restore "$DOTNET_DIR" --verbosity quiet &>/dev/null; then
+        if dotnet restore "$CLI_PROJECT" --verbosity quiet &>/dev/null; then
             printf "[OK]      %-14s packages restored\n" "nuget"
-            if dotnet build "$DOTNET_DIR" --verbosity quiet --no-restore &>/dev/null; then
+            if dotnet build "$CLI_PROJECT" --verbosity quiet --no-restore &>/dev/null; then
                 printf "[OK]      %-14s build succeeded\n" "project"
             else
-                printf "[FAIL]    %-14s build failed (run: dotnet build %s)\n" "project" "$DOTNET_DIR"
+                printf "[FAIL]    %-14s build failed (run: dotnet build %s)\n" "project" "$CLI_PROJECT"
                 STATUS="NOT READY"
             fi
         else

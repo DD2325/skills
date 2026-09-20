@@ -10,6 +10,11 @@ export DOTNET_CLI_UI_LANGUAGE=en
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DOTNET_DIR="$SCRIPT_DIR/dotnet"
+# Build against the CLI project, not $DOTNET_DIR: the directory holds only
+# MiniMaxAIDocx.slnx, which needs SDK 9.0.200+, while this script installs SDK 8
+# and the projects target net8.0. The CLI project references Core, so restoring
+# it covers the whole solution.
+CLI_PROJECT="$DOTNET_DIR/MiniMaxAIDocx.Cli/MiniMaxAIDocx.Cli.csproj"
 LOG_FILE="$PROJECT_DIR/.setup.log"
 
 # --- Colors ---
@@ -269,7 +274,7 @@ build_project() {
     cd "$DOTNET_DIR"
 
     info "Restoring NuGet packages..."
-    if ! dotnet restore --verbosity quiet 2>>"$LOG_FILE"; then
+    if ! dotnet restore "$CLI_PROJECT" --verbosity quiet 2>>"$LOG_FILE"; then
         fail "NuGet restore failed. Check network and $LOG_FILE for details."
         fail "Common causes:"
         fail "  - No internet access (NuGet needs to download packages)"
@@ -282,7 +287,7 @@ build_project() {
     log "NuGet packages restored"
 
     info "Building project..."
-    if ! dotnet build --verbosity quiet --no-restore 2>>"$LOG_FILE"; then
+    if ! dotnet build "$CLI_PROJECT" --verbosity quiet --no-restore 2>>"$LOG_FILE"; then
         fail "Build failed. Check $LOG_FILE for details."
         fail "Try manually: cd $DOTNET_DIR && dotnet build --verbosity normal"
         return 1

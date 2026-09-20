@@ -13,6 +13,11 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectDir = Split-Path -Parent $ScriptDir
 $DotnetDir = Join-Path $ScriptDir "dotnet"
+# Build against the CLI project, not $DotnetDir: the directory holds only
+# MiniMaxAIDocx.slnx, which needs SDK 9.0.200+, while this script installs SDK 8
+# and the projects target net8.0. The CLI project references Core, so restoring
+# it covers the whole solution.
+$CliProject = Join-Path $DotnetDir "MiniMaxAIDocx.Cli\MiniMaxAIDocx.Cli.csproj"
 $LogFile = Join-Path $ProjectDir ".setup.log"
 
 # --- Output Helpers ---
@@ -204,7 +209,7 @@ if (-not (Test-Path $DotnetDir)) {
 Push-Location $DotnetDir
 
 Info "Restoring NuGet packages..."
-$restoreResult = & dotnet restore --verbosity quiet 2>&1
+$restoreResult = & dotnet restore $CliProject --verbosity quiet 2>&1
 if ($LASTEXITCODE -ne 0) {
     Fail "NuGet restore failed:"
     $restoreResult | ForEach-Object { Fail "  $_" }
@@ -219,7 +224,7 @@ if ($LASTEXITCODE -ne 0) {
 Log "NuGet packages restored"
 
 Info "Building project..."
-$buildResult = & dotnet build --verbosity quiet --no-restore 2>&1
+$buildResult = & dotnet build $CliProject --verbosity quiet --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
     Fail "Build failed:"
     $buildResult | ForEach-Object { Fail "  $_" }
