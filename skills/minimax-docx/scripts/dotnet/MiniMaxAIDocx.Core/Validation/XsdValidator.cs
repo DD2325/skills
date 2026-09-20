@@ -24,7 +24,11 @@ public class XsdValidator
         var result = new ValidationResult();
         var settings = new XmlReaderSettings();
 
-        var schemaSet = new XmlSchemaSet();
+        // .NET (Core) defaults XmlResolver to null, so an xs:import's
+        // schemaLocation is never fetched and every imported namespace (r:, xml:)
+        // stays unresolved -- compilation then fails on the first reference.
+        // Restore the resolver so schemas with imports compile.
+        var schemaSet = new XmlSchemaSet { XmlResolver = new XmlUrlResolver() };
         schemaSet.Add(null, xsdPath);
         settings.Schemas = schemaSet;
         settings.ValidationType = ValidationType.Schema;
